@@ -1,4 +1,4 @@
-import { StyleSheet} from "react-native";
+import { StyleSheet } from "react-native";
 import { responsiveHeight, responsiveWidth, responsiveFontSize } from 'react-native-responsive-dimensions';
 
 export default styles = StyleSheet.create({
@@ -14,7 +14,7 @@ export default styles = StyleSheet.create({
         backgroundColor: "white",
         width: "90%",
         padding: responsiveWidth(8),
-        borderRadius : 5,
+        borderRadius: 5,
         alignItems: "center",
         shadowColor: "#000",
         shadowOffset: {

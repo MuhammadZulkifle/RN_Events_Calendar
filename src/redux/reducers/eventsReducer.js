@@ -2,15 +2,14 @@ import { types } from "../actions/actiontypes";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const initialState = {
-    loading: false,
     events: [],
     error: '',
 };
 
 const eventsReducer = (state = initialState, action) => {
-    const addEventsToStorage = async () => {
+    const addEventsToStorage = async (eventsArray) => {
         try {
-            await AsyncStorage.setItem('events', JSON.stringify(initialState.events));
+            await AsyncStorage.setItem('events', JSON.stringify(eventsArray));
         } catch (err) {
             console.log("Error Saving Event to storage");
         }
@@ -18,35 +17,42 @@ const eventsReducer = (state = initialState, action) => {
 
     switch (action.type) {
         case types.ADD_NEW_EVENT:
-            console.log("INitial State ", state);
-            let array = state.events.concat(action.payload);
-            console.log("Array" , array);
-            initialState.events.push(action.payload);
-            console.log("Events", initialState.events);
-            addEventsToStorage();
+            let array;
+            if (state.events) {
+                array = state.events.concat(action.payload);
+            } else {
+                array = [action.payload]
+            }
+            addEventsToStorage(array);
             return {
                 ...state,
-                events : array
+                events: array
             };
 
         case types.GET_ALL_EVENTS:
-            console.log("EVENTS FROM ASYNC Storage Payload ", action.payload);
             return {
                 ...state,
-                events : action.payload
+                events: action.payload
             };
         case types.UPDATE_EVENT:
-            console.log(`DATE_EVEN REDUCER`);
+            let updatedEvents = state.events.map((item) => {
+                if (item.id == action.payload.id) {
+                    return action.payload;
+                } else {
+                    return item
+                }
+            })
             return {
                 ...state,
+                events: updatedEvents
             };
         case types.DELETE_EVENT:
-            console.log(`DELETE_EVENT REDUCER`);
-
+            let filtered = state.events.filter(item => item.id != action.payload);
+            addEventsToStorage(filtered);
             return {
-                ...state
+                ...state,
+                events: filtered
             };
-
         default:
             return state;
     }

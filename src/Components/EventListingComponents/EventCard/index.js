@@ -1,7 +1,5 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React from 'react';
 import {
-    SafeAreaView,
-    ScrollView,
     View,
     Text,
     TouchableOpacity
@@ -15,12 +13,9 @@ import { responsiveFontSize } from 'react-native-responsive-dimensions';
 import styles from './styles'
 
 export default EventCard = (props) => {
-    let {data , deleteHandler ,  editHandler} = props;
-    console.log("data " , data);
+    let { data, deleteHandler, editHandler } = props;
 
     const openFile = (uri) => {
-      //  console.log(props.eventDoc);
-    //    return;
         FileViewer.open(uri)
             .then(() => {
                 console.log('Success');
@@ -40,7 +35,7 @@ export default EventCard = (props) => {
                 <View style={styles.iconsView} >
 
                     <TouchableOpacity
-                    onPress={()=> deleteHandler()}
+                        onPress={() => deleteHandler()}
                     >
                         <AntDesign
                             style={styles.deleteIcon}
@@ -51,7 +46,7 @@ export default EventCard = (props) => {
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                     onPress={()=> editHandler()}
+                        onPress={() => editHandler()}
                     >
 
                         <AntDesign
@@ -66,30 +61,30 @@ export default EventCard = (props) => {
 
             </View>
 
-            <Text style = {styles.date} >
+            <Text style={styles.date} >
                 {data?.date}
             </Text>
             {
-                (data?.description && data?.description.length >1) &&
-            <Text style = {styles.description} >
-                {data?.description}
-            </Text>
+                (data?.description && data?.description.length > 1) &&
+                <Text style={styles.description} >
+                    {data?.description}
+                </Text>
 
             }
             {
-                data?.docName && 
+                data?.docName &&
 
-            <TouchableOpacity onPress={()=>{openFile(props.data.eventDoc.uri)}} style = {styles.documentView}>
-            <FontAwesome
-                name="file-pdf"
-                color= '#f40f02'
-                size={responsiveFontSize(3.5)}
-            />
+                <TouchableOpacity onPress={() => { openFile(props.data.eventDoc.uri) }} style={styles.documentView}>
+                    <FontAwesome
+                        name="file-pdf"
+                        color='#f40f02'
+                        size={responsiveFontSize(3.5)}
+                    />
 
-            <Text style = {styles.documentTitle} >
-                {data.docName}
-            </Text>
-            </TouchableOpacity>
+                    <Text style={styles.documentTitle} >
+                        {data.docName}
+                    </Text>
+                </TouchableOpacity>
 
             }
 

@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
-import { responsiveHeight, responsiveWidth, responsiveFontSize, } from 'react-native-responsive-dimensions';
+import { responsiveHeight, responsiveWidth, responsiveFontSize } from 'react-native-responsive-dimensions';
+
 
 export default styles = StyleSheet.create({
     inputView: {
@@ -10,13 +11,19 @@ export default styles = StyleSheet.create({
         width: responsiveWidth(90),
         borderRadius: 6,
     },
-
+    timePickerInputView: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderWidth: 1,
+        marginTop: responsiveHeight(1),
+        width: responsiveWidth(40),
+        borderRadius: 6,
+    },
     textInput: {
         height: responsiveHeight(5.8),
         paddingVertical: 0,
         fontSize: responsiveFontSize(2),
         paddingLeft: responsiveWidth(4),
-        width: "100%"
     },
 
     error: {
@@ -39,10 +46,5 @@ export default styles = StyleSheet.create({
     icon: {
         marginTop: responsiveHeight(1),
     },
-    required:
-    {
-        color: 'red',
-        fontWeight: '900'
-    }
-
+    required: { color: 'red', fontWeight: '900' },
 });

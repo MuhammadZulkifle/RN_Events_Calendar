@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { responsiveHeight, responsiveWidth, responsiveFontSize } from 'react-native-responsive-dimensions';
+import { responsiveHeight, responsiveFontSize } from 'react-native-responsive-dimensions';
 
 export default styles = StyleSheet.create({
     parentView: {
@@ -18,6 +18,15 @@ export default styles = StyleSheet.create({
         fontWeight: '600',
         marginTop: responsiveHeight(2),
         color: 'black',
+    },
+    noEventsText : {
+        fontSize : responsiveFontSize(2.5),
+        fontWeight : "bold",
+        color : "#1e1e1e",
+    },
+    noEventsView : {
+        alignItems :  "center",
+        marginTop : responsiveHeight(4)
     },
     line: {
         borderBottomColor: '#ccc',

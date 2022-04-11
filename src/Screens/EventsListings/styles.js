@@ -9,7 +9,6 @@ export default styles = StyleSheet.create({
     internalView: {
       width: '90%',
       alignSelf: 'center',
-     // flex : 1
     },
     titleView : {
         alignItems : "center"
@@ -19,6 +18,15 @@ export default styles = StyleSheet.create({
         fontWeight: '600',
         marginTop : responsiveHeight(2),
         color: 'black',
+      },
+      noEventsText : {
+          fontSize : responsiveFontSize(2.5),
+          fontWeight : "bold",
+          color : "#1e1e1e",
+      },
+      noEventsView : {
+          alignItems :  "center",
+          marginTop : responsiveHeight(4)
       },
       line : {
         borderBottomColor: '#ccc',

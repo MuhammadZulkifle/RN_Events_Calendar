@@ -13,7 +13,9 @@ import DocumentPicker from 'react-native-document-picker';
 import FileViewer from 'react-native-file-viewer';
 import FontAwesome from 'react-native-vector-icons/FontAwesome5';
 import { responsiveFontSize } from 'react-native-responsive-dimensions';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
+import PushNotification from "react-native-push-notification";
+
 
 import styles from './styles';
 
@@ -23,7 +25,7 @@ import DatePickerField from '../../Components/Shared/DatePickerField';
 import DropDown from '../../Components/Shared/Dropdown';
 import Button from '../../Components/Shared/Button';
 
-import { addNewEvent , getAllEvent } from '../../redux/actions/eventsAction'
+import { addNewEvent, updateEvent } from '../../redux/actions/eventsAction'
 
 
 let eventsTypes = [
@@ -31,7 +33,7 @@ let eventsTypes = [
     'Out Of Office',
     'Task'
 ];
-export default CreateEvent = () => {
+export default CreateEvent = (props) => {
     const [eventType, setEventType] = useState('Select');
     const [eventTypeError, setEventTypeError] = useState('');
 
@@ -39,7 +41,6 @@ export default CreateEvent = () => {
     const [eventNameError, setEventNameError] = useState('');
 
     const [description, setDescription] = useState('');
-    // const [descriptionError, setDescriptionError] = useState('');
 
     const [eventDate, setEventDate] = useState('');
     const [eventDateError, setEventDateError] = useState('');
@@ -59,20 +60,24 @@ export default CreateEvent = () => {
     const [mode, setMode] = useState('date');
     const [showDatePicker, setShowDatePicker] = useState(false);
 
-    const dispatch = useDispatch();
+     const dispatch = useDispatch();
 
-
-    const eventsData = useSelector(
-        state => state.eventsReducer.events
-    );
-
-
-    console.log("Events Data" , eventsData);
+    useEffect(() => {
+        if (props?.route?.params) {
+            let item = props.route.params.item;
+            setEventName(item.eventName);
+            setDescription(item.description);
+            setEventType(item.eventType);
+            setEventDate(new Date(item.eventDate));
+            setEventStartTime(new Date(item.eventStartTime));
+            setEventEndTime(new Date(item.eventEndTime));
+            setEventDoc(item.eventDoc);
+        }
+    }, [props.route.params])
 
     const onDateChange = (event, selectedDate) => {
         setShowDatePicker(false);
         const currentDate = selectedDate || date;
-        console.log(currentDate);
         if (mode == 'date') {
             setEventDate(currentDate);
             setEventDateError();
@@ -88,27 +93,16 @@ export default CreateEvent = () => {
 
         try {
             const res = await DocumentPicker.pick({
-
                 type: [DocumentPicker.types.pdf],
-                // There can me more options as well
-                // DocumentPicker.types.allFiles
-                // DocumentPicker.types.images
-                // DocumentPicker.types.plainText
-                // DocumentPicker.types.audio
-                // DocumentPicker.types.pdf
             });
 
             if (res) {
-                console.log("response", res);
-                console.log(res[0].uri);
                 let uri = res[0].uri;
 
                 if (Platform.OS === 'ios') {
-                    // Remove 'file://' from file path for FileViewer
                     uri = res.uri.replace('file://', '');
                 }
 
-                console.log('URI : ' + uri);
                 setEventDoc(res[0]);
                 return;
             }
@@ -133,8 +127,7 @@ export default CreateEvent = () => {
     }
 
     const submitHandler = () => {
-        // dispatch(getAllEvent());
-        // return;
+
         let counter = 0;
         if (eventName == "") {
             setEventNameError("Event Name is required");
@@ -156,28 +149,51 @@ export default CreateEvent = () => {
             setEventEndTimeError("End Time required");
             counter++;
         }
+
         if (counter == 0) {
             let event = {
                 eventName,
                 description,
                 eventType,
-                eventDate,
+                eventDate: new Date(`${(moment(eventDate).format("YYYY-MM-DD"))}T${(moment(eventStartTime).format("hh:mm:ss"))}`),
                 eventStartTime,
                 eventEndTime,
-                eventDoc
+                eventDoc,
+                id: props.route.params ? props.route.params.item.id : new Date().getUTCMilliseconds()
             }
-            console.log("Event TO Add", event);
+            var d = new Date(event.eventDate);
+            let subtractedvalue = moment((d.setMinutes(d.getMinutes() - 10)));
+            let sliced = subtractedvalue.toISOString().slice(0, -5);
+            let dateSelec = moment(sliced).format("ddd MMM DD YYYY HH:mm:ss") + " GMT+0500";
+            PushNotification.localNotificationSchedule({
+                channelId: "TestID",
+                title: `Event ${event.eventName}`,
+                message: "You have an event scheduled after 10 minutes",
+                date: new Date(dateSelec),
+                allowWhileIdle: true
+            });
+            if (props.route.params) {
+                dispatch(updateEvent(event));
+                props.route.params.screen == "Listing" ? props.navigation.navigate("EventsListings") :
+                    props.navigation.navigate("EventsCalendarView");
+                return;
+            }
             dispatch(addNewEvent(event));
+            props.navigation.getState().routes[0].name == "EventsListings" ? props.navigation.navigate('EventsListings') :
+                props.navigation.navigate("EventsCalendarView");
         }
 
     }
 
     return (
         <SafeAreaView style={styles.parentView}>
+
             <ScrollView>
+
                 <View style={styles.internalView}>
+
                     <View style={styles.titleView} >
-                        <Text style={styles.title}>Create Event</Text>
+                        <Text style={styles.title}>{props.route.params ? "Edit Event" : "Create Event"}</Text>
                         <View style={styles.line}></View>
                     </View>
 
@@ -231,7 +247,6 @@ export default CreateEvent = () => {
 
                         }
                         }
-                        value={eventDate}
                         errorMessage={eventDateError}
                     />
 
@@ -239,8 +254,8 @@ export default CreateEvent = () => {
                         <Text style={styles.label}> Event Time </Text>
                         <Text style={styles.required}> * </Text>
                     </View>
-                    <View style={{ flexDirection: "row", justifyContent: "space-between" }} >
 
+                    <View style={{ flexDirection: "row", justifyContent: "space-between" }} >
 
                         <DatePickerField
                             timePicker
@@ -254,7 +269,6 @@ export default CreateEvent = () => {
                                 setShowDatePicker(true)
                             }
                             }
-                            value={eventStartTime}
                             errorMessage={eventStartTimeError}
                         />
 
@@ -270,14 +284,10 @@ export default CreateEvent = () => {
                                 setShowDatePicker(true)
                             }
                             }
-                            value={eventEndTime}
                             errorMessage={eventEndTimeError}
                         />
 
                     </View>
-
-
-
 
                     {showDatePicker && (
                         <DateTimePicker
@@ -298,28 +308,37 @@ export default CreateEvent = () => {
 
                     {
                         eventDoc ?
+
                             <View style={styles.documentViewForm} >
+
                                 <TouchableOpacity onPress={() => openFile(eventDoc.uri)} style={styles.documentView}>
+
                                     <FontAwesome
                                         name="file-pdf"
                                         color='#f40f02'
                                         size={responsiveFontSize(3.5)}
                                     />
+
                                     <Text
                                         numberOfLines={1}
                                         adjustsFontSizeToFit={true}
                                         style={styles.documentTitle} >
                                         {eventDoc.name}
                                     </Text>
+
                                     <TouchableOpacity onPress={() => { setEventDoc('') }} style={styles.removePdfView} >
+
+
                                         <Text style={styles.removeIcon} >
                                             X
                                         </Text>
                                     </TouchableOpacity>
+
                                 </TouchableOpacity>
+
                             </View> :
+
                             <Button
-                                // backgroundColor="#118936"
                                 btnText="Browse"
                                 borderColor="#118936"
                                 marginTop={2}
@@ -329,20 +348,16 @@ export default CreateEvent = () => {
                                 handler={selectOneFile}
                             />
                     }
+
                     <Button
                         backgroundColor="#118936"
-                        btnText="Create Event"
+                        btnText={props.route.params ? "Edit Event" : "Create Event"}
                         borderColor="#118936"
                         marginTop={2}
                         color="#ffffff"
                         height={6.5}
                         handler={submitHandler}
                     />
-
-
-
-
-
 
                 </View>
             </ScrollView>

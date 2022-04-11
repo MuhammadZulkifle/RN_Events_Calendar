@@ -12,89 +12,72 @@ import EventCard from '../../Components/EventListingComponents/EventCard';
 import { Calendar, CalendarList, Agenda } from 'react-native-calendars';
 import { useDispatch, useSelector } from 'react-redux';
 import moment from 'moment';
+import { deleteEvent } from '../../redux/actions/eventsAction'
 
 import DeleteConfirmationModal from '../../Components/Shared/ConfirmationModal'
 
 import styles from './styles';
 
-let events = [
-    {
-        eventTitle: "Tour de Naran",
-        date: "Monday , 22 March 2022 7:40 AM",
-        description: "Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum has been the industry's standard dummy text.",
-        docName: "Event Details.pdf"
-    },
-    {
-        eventTitle: "Meeting CEO",
-        date: "Tuesday , 23 March 2022 7:40 AM",
-        docName: "Document Name.pdf"
-    },
-    {
-        eventTitle: "Weekly Lunch",
-        date: "Monday , 22 March 2022 7:40 AM",
-        description: "Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum has been the industry's standard dummy text.",
-    },
-    {
-        eventTitle: "Aftar Party",
-        date: "Monday , 22 March 2022 7:40 AM",
-    },
-    {
-        eventTitle: "Tour de Naran",
-        date: "Monday , 22 March 2022 7:40 AM",
-        description: "Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum has been the industry's standard dummy text.",
-        docName: "Event Details.pdf"
-    },
-]
-
-
-export default EventsListing = () => {
+export default EventsListing = (props) => {
     const [eventType, setEventType] = useState('All');
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
-    const [itemIndex, setItemIndex] = useState(-1);
+    const [selectedItem, setselectedItem] = useState(-1);
+    const [selectedEvents, setSelectedEvents] = useState([]);
+
+
+
+    let currentDate = moment(new Date()).format("YYYY-MM-DD");
+
+    const [markedDates, setMarkedDates] = useState({ [currentDate]: { selected: true, marked: true, selectedColor: '#118936' } });
+
+    const dispatch = useDispatch();
 
     const eventsData = useSelector(
         state => state.eventsReducer.events
     );
 
-    console.log("Events Data" ,(eventsData)) ;
-    console.log("Type of " ,(eventsData));
-    let currentDate = moment(new Date()).format("YYYY-MM-DD");
-    console.log("Current Date", currentDate);
+    useEffect(() => {
+        if(eventsData){
+            let date = new Date();
+            setSelectedEvents(eventsData?.filter(item => moment(date).isSame(item.eventDate, 'day')));
+        }
+    }, [eventsData]);
 
-
-    const [markedDates, setMarkedDates] = useState({ [currentDate]: { selected: true, marked: true, selectedColor: '#118936' } });
-
-
-    const deletehandler = (index) => {
+    const deletehandler = (item) => {
         setShowDeleteModal(true);
-        setItemIndex(index)
-        console.log("Index", index);
+        setselectedItem(item)
     }
 
     const deleteConfirmHandler = () => {
-        console.log("Deleting Item ", itemIndex);
+        dispatch(deleteEvent(selectedItem.id))
         setShowDeleteModal(false);
     }
 
-    const edithandler = (index) => {
+    const edithandler = (item) => {
         setShowEditModal(true);
-        setItemIndex(index)
-        console.log("Index", index);
+        setselectedItem(item)
     }
 
     const editConfirmHandler = () => {
-        console.log("Editing Item ", itemIndex);
         setShowEditModal(false);
+        props.navigation.navigate("CreateEvent", { item: selectedItem, screen: "Calendar" })
     }
 
 
 
     const EventsCards = ({ item, index }) => (
-        <EventCard data={item}
+        <EventCard data={{
+            eventTitle: item.eventName,
+            description: item.description,
+            eventDoc: item.eventDoc,
+            docName: item.eventDoc.name,
+            id: item.id,
+            date: `${moment(item.eventDate).format("dddd , DD MMM  YYYY ").toString()} ${moment(item.eventStartTime).format("hh:mm A").toString()}`
+        }}
             index={index}
-            deleteHandler={() => deletehandler(index)}
-            editHandler={() => edithandler(index)}
+            deleteHandler={() => deletehandler(item)}
+            editHandler={() => edithandler(item)}
         />
     );
 
@@ -111,18 +94,13 @@ export default EventsListing = () => {
                 }}
 
                 onDayPress={day => {
-                    console.log('selected day', day);
-                    console.log("Date", (new Date(day.timestamp)).toString());
-                    console.log(day.dateString);
+                    setSelectedEvents(eventsData?.filter(item => moment(day.dateString).isSame(moment(item.eventDate).format("YYYY-MM-DD")), 'day'));
                     const date = day.dateString;
                     setMarkedDates({
                         [day.dateString]: { selected: true, marked: true, selectedColor: '#118936' }
                     }
                     );
-
                 }}
-                // firstDay={1}
-                // hideExtraDays={true}
                 onPressArrowLeft={subtractMonth => subtractMonth()}
                 onPressArrowRight={addMonth => addMonth()}
                 disableAllTouchEventsForDisabledDays={true}
@@ -133,20 +111,28 @@ export default EventsListing = () => {
 
     const footerView = () => {
         return (
-            <FlatList
-                contentContainerStyle={{ paddingBottom: responsiveHeight(20) }}
-                showsVerticalScrollIndicator={false}
-                data={events}
-                style={{
-                    marginTop: responsiveHeight(1),
-                }}
-                keyExtractor={(item, index) => {
-                    return index.toString();
-                }}
-                renderItem={
-                    EventsCards
-                }
-            />
+
+            selectedEvents?.length < 1 ?
+                <View style={styles.noEventsView} >
+                    <Text style={styles.noEventsText} >
+                        No Events to show yet
+                    </Text>
+                </View>
+                :
+                <FlatList
+                    contentContainerStyle={{ paddingBottom: responsiveHeight(20) }}
+                    showsVerticalScrollIndicator={false}
+                    data={selectedEvents}
+                    style={{
+                        marginTop: responsiveHeight(1),
+                    }}
+                    keyExtractor={(item, index) => {
+                        return index.toString();
+                    }}
+                    renderItem={
+                        EventsCards
+                    }
+                />
 
         )
     }
@@ -168,7 +154,7 @@ export default EventsListing = () => {
                         btnText="Create Event"
                         borderColor="#118936"
                         color="white"
-                        handler={() => props.submitHandler()}
+                        handler={() => props.navigation.navigate('CreateEvent')}
                         iconName="plus"
                         iconColor="white"
                     />

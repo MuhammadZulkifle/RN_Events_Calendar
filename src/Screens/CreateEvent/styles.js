@@ -39,7 +39,6 @@ export default styles = StyleSheet.create({
         width: '112%',
     },
     documentView: {
-        //    marginTop: responsiveHeight(2),
         flexDirection: "row",
         alignItems: "center",
         alignSelf: 'flex-start',
@@ -50,8 +49,7 @@ export default styles = StyleSheet.create({
         fontSize: responsiveFontSize(2),
         fontWeight: 'bold',
         color: "#1e1e1e",
-      //  backgroundColor : "red",
-        width : responsiveWidth(60)
+        width: responsiveWidth(60)
     },
     headerView: {
         flexDirection: "row",
@@ -66,12 +64,10 @@ export default styles = StyleSheet.create({
     },
     removePdfView: {
         marginLeft: "auto",
-       // backgroundColor : "red",
-        padding : responsiveHeight(1)
+        padding: responsiveHeight(1)
     },
     removeIcon: {
         fontSize: responsiveFontSize(2.0),
-        //fontWeight : "bold",
         color: "#000"
     }
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Text, View } from 'react-native';
 import { responsiveFontSize } from 'react-native-responsive-dimensions';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';

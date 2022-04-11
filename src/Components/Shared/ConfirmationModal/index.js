@@ -30,7 +30,7 @@ const DeleteConfirmationModal = (props) => {
                             backgroundColor="#ffffff"
                             btnText="No"
                             borderColor="#118936"
-                            width="43%"
+                            width={35}
                             marginTop={'0'}
                             color="#118936"
                             height={6.5}
@@ -41,7 +41,7 @@ const DeleteConfirmationModal = (props) => {
                             backgroundColor="#118936"
                             btnText="Yes"
                             borderColor="#118936"
-                            width="43%"
+                            width={35}
                             marginTop={'0'}
                             color="#ffffff"
                             height={6.5}

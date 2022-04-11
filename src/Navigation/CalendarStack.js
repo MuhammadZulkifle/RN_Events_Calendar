@@ -2,19 +2,19 @@ import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 
 import CreateEvent from '../Screens/CreateEvent';
-import EventsListings from '../Screens/EventsListings';
+import EventsCalendarView from '../Screens/EventsCalendarView';
 
 const Stack = createStackNavigator();
 
-const EventStack = () => {
+const EventCalendarStack = () => {
     return (
         <Stack.Navigator
-            initialRouteName={'EventsListings'}
+            initialRouteName={'EventsCalendarView'}
             screenOptions={{ headerShown: false }}
         >
             <Stack.Screen
-                name="EventsListings"
-                component={EventsListings}
+                name="EventsCalendarView"
+                component={EventsCalendarView}
             />
             <Stack.Screen
                 name="CreateEvent"
@@ -25,4 +25,4 @@ const EventStack = () => {
     );
 };
 
-export default EventStack;
+export default EventCalendarStack;

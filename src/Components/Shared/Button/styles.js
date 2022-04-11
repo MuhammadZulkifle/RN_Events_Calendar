@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet } from 'react-native';
 import {
     responsiveHeight,
     responsiveWidth,

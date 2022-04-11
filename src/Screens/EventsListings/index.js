@@ -7,13 +7,15 @@ import {
 } from 'react-native';
 import { responsiveHeight } from 'react-native-responsive-dimensions';
 import { useDispatch, useSelector } from 'react-redux';
-import moment from 'moment'
+import moment from 'moment';
+import PushNotification from "react-native-push-notification";
 
 import ButtonAddEvent from '../../Components/EventListingComponents/AddEventButton';
 import EventCard from '../../Components/EventListingComponents/EventCard';
-
 import DropDown from '../../Components/Shared/Dropdown';
 import DeleteConfirmationModal from '../../Components/Shared/ConfirmationModal';
+
+import { deleteEvent } from '../../redux/actions/eventsAction'
 
 import styles from './styles'
 
@@ -24,81 +26,65 @@ let eventsTypes = [
     'Task'
 ];
 
-let events = [
-    {
-        eventTitle: "Tour de Naran",
-        date: "Monday , 22 March 2022 7:40 AM",
-        description: "Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum has been the industry's standard dummy text.",
-        docName: "Event Details.pdf"
-    },
-    {
-        eventTitle: "Meeting CEO",
-        date: "Tuesday , 23 March 2022 7:40 AM",
-        docName: "Document Name.pdf"
-    },
-    {
-        eventTitle: "Weekly Lunch",
-        date: "Monday , 22 March 2022 7:40 AM",
-        description: "Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum has been the industry's standard dummy text.",
-    },
-    {
-        eventTitle: "Aftar Party",
-        date: "Monday , 22 March 2022 7:40 AM",
-    },
-]
-
-
-
 export default EventsListing = (props) => {
     const [eventType, setEventType] = useState('All');
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
-    const [itemIndex, setItemIndex] = useState(-1);
+    const [selectedItem, setselectedItem] = useState(-1);
+    const [selectedData, setSelectedData] = useState([]);
 
-    
+    const dispatch = useDispatch();
+
     const eventsData = useSelector(
         state => state.eventsReducer.events
     );
 
-    console.log("events data " , eventsData);
 
-    const deletehandler = (index) => {
+    useEffect(() => {
+        if(eventsData){
+            const sorted = eventsData.sort((a, b) => {
+                return new Date(a.eventDate) - new Date(b.eventDate);
+            });
+            setSelectedData(eventsData);
+        }
+    }, [eventsData]);
+
+    const deletehandler = (item) => {
         setShowDeleteModal(true);
-        setItemIndex(index)
-        console.log("Index", index);
+        setselectedItem(item)
+        console.log("Index", item.id);
     }
 
     const deleteConfirmHandler = () => {
-        console.log("Deleting Item ", itemIndex);
+        dispatch(deleteEvent(selectedItem.id))
         setShowDeleteModal(false);
     }
 
-    const edithandler = (index) => {
+    const edithandler = (item) => {
         setShowEditModal(true);
-        setItemIndex(index)
-        console.log("Index", index);
+        setselectedItem(item)
     }
 
     const editConfirmHandler = () => {
-        console.log("Editing Item ", itemIndex);
         setShowEditModal(false);
+        props.navigation.navigate("CreateEvent", { item: selectedItem, screen: "Listing" })
     }
 
 
 
     const EventsCards = ({ item, index }) => (
         <EventCard data={{
-            eventTitle : item.eventName,
-            description : item.description,
-            eventDoc : item.eventDoc,
-            docName : item.eventDoc.name,
-            date : `${moment(item.eventDate).format("dddd , DD MMM  YYYY ").toString()} ${moment(item.eventStartTime).format("hh:mm A").toString()}`
+            eventTitle: item.eventName,
+            description: item.description,
+            eventDoc: item.eventDoc,
+            docName: item.eventDoc.name,
+            id: item.id,
+            date: `${moment(item.eventDate).format("dddd , DD MMM  YYYY").toString()} ${moment(item.eventStartTime).format("hh:mm A").toString()}`
         }}
             index={index}
-            deleteHandler={() => deletehandler(index)}
-            editHandler={() => edithandler(index)}
+            deleteHandler={() => deletehandler(item)}
+            editHandler={() => edithandler(item)}
         />
-        
     );
     return (
         <SafeAreaView style={styles.parentView}>
@@ -112,6 +98,14 @@ export default EventsListing = (props) => {
                     <DropDown
                         onSelected={e => {
                             setEventType(eventsTypes[e]);
+                            const sorted = eventsData?.sort((a, b) => {
+                                return new Date(a.eventDate) - new Date(b.eventDate);
+                            });
+                            if (eventsTypes[e] == 'All') {
+                                setSelectedData(sorted);
+                                return;
+                            }
+                            setSelectedData(sorted?.filter(item => item.eventType == eventsTypes[e]))
                         }}
                         value={eventType}
                         options={eventsTypes}
@@ -149,22 +143,30 @@ export default EventsListing = (props) => {
                     yesHandler={editConfirmHandler}
                 />}
 
+                {
+                    selectedData?.length < 1 ?
 
-
-                <FlatList
-                    contentContainerStyle={{ paddingBottom: responsiveHeight(20) }}
-                    showsVerticalScrollIndicator={false}
-                    data={eventsData}
-                    style={{
-                        marginTop: responsiveHeight(1),
-                    }}
-                    keyExtractor={(item, index) => {
-                        return index.toString();
-                    }}
-                    renderItem={
-                        EventsCards
-                    }
-                />
+                        <View style={styles.noEventsView} >
+                            <Text style={styles.noEventsText} >
+                                No Events to show yet
+                            </Text>
+                        </View>
+                        :
+                        <FlatList
+                            contentContainerStyle={{ paddingBottom: responsiveHeight(20) }}
+                            showsVerticalScrollIndicator={false}
+                            data={selectedData}
+                            style={{
+                                marginTop: responsiveHeight(1),
+                            }}
+                            keyExtractor={(item, index) => {
+                                return index.toString();
+                            }}
+                            renderItem={
+                                EventsCards
+                            }
+                        />
+                }
             </View>
         </SafeAreaView>
 

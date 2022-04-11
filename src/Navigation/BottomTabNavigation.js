@@ -1,16 +1,12 @@
-import React, { useContext } from 'react';
+import React from 'react';
 
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { responsiveFontSize } from 'react-native-responsive-dimensions';
 
-
-//import CreateEvent from '../Screens/CreateEvent';
-import EventsCalendarView from '../Screens/EventsCalendarView';
-//import EventsListings from '../Screens/EventsListings';
-
 import EventStack from './EventStackNavigation';
+import EventCalendarStack from './CalendarStack';
 
 
 const Tab = createBottomTabNavigator();
@@ -20,6 +16,7 @@ export default function BottomTabNavigation() {
         <Tab.Navigator
             screenOptions={{
                 tabBarActiveTintColor: '#118936',
+                tabBarHideOnKeyboard: true,
                 headerShown : false
             }}>
             <Tab.Screen
@@ -38,7 +35,7 @@ export default function BottomTabNavigation() {
             />
             <Tab.Screen
                 name="Events Calendar View"
-                component={EventsCalendarView}
+                component={EventCalendarStack}
                 options={{
                     tabBarIcon: ({ focused }) => (
                         <FontAwesome
